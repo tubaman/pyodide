@@ -2,11 +2,13 @@ import "./constants";
 
 import {
   IN_NODE,
+  IN_GM,
   nodeFsPromisesMod,
   loadBinaryFile,
   initNodeModules,
   resolvePath,
   base16ToBase64,
+  greasemonkey_loadFile,
 } from "./compat.js";
 import { createLock } from "./lock";
 import { loadDynlibsFromPackage } from "./dynload";
@@ -26,6 +28,9 @@ async function initializePackageIndex(lockFileURL: string) {
     await initNodeModules();
     const package_string = await nodeFsPromisesMod.readFile(lockFileURL);
     lockfile = JSON.parse(package_string);
+  } else if (IN_GM) {
+    let response = await greasemonkey_loadFile(lockFileURL);
+    lockfile = await response.json();
   } else {
     let response = await fetch(lockFileURL);
     lockfile = await response.json();
