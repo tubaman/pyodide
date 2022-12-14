@@ -15,6 +15,10 @@ let nodeVmMod: any;
 /** @private */
 export let nodeFsPromisesMod: any;
 
+// Detect if we're in Greasemonkey
+// @ts-ignore
+export const IN_GM = typeof GM.xmlHttpRequest === "function";
+
 declare var globalThis: {
   importScripts: (url: string) => void;
   document?: any;
@@ -157,6 +161,39 @@ async function browser_loadBinaryFile(
   return new Uint8Array(await response.arrayBuffer());
 }
 
+/**
+ * Load a binary file, only for use in Greasemonkey. Resolves relative paths against
+ * indexURL.
+ *
+ * @param path the path to load
+ * @param subResourceHash the sub resource hash for fetch() integrity check
+ * @returns A Uint8Array containing the binary data
+ * @private
+ */
+async function greasemonkey_loadBinaryFile(
+  path: string,
+  subResourceHash: string | undefined,
+): Promise<Uint8Array> {
+  console.log("greasemonkey_loadBinaryFile");
+  console.log("path: " + path);
+  return new Promise((resolve, reject) => {
+    // @ts-ignore
+    GM.xmlHttpRequest({
+      method: "GET",
+      url: path,
+      responseType: "arraybuffer",
+      // @ts-ignore
+      onload: function(response) {
+        resolve(new Uint8Array(response.responseText));
+      },
+      // @ts-ignore
+      onerror: function(response) {
+        reject(response.statusText);
+      }
+    });
+  });
+}
+
 /** @private */
 export let loadBinaryFile: (
   path: string,
@@ -164,6 +201,8 @@ export let loadBinaryFile: (
 ) => Promise<Uint8Array>;
 if (IN_NODE) {
   loadBinaryFile = node_loadBinaryFile;
+} else if (IN_GM) {
+  loadBinaryFile = greasemonkey_loadBinaryFile;
 } else {
   loadBinaryFile = browser_loadBinaryFile;
 }
@@ -176,7 +215,10 @@ if (IN_NODE) {
  */
 export let loadScript: (url: string) => Promise<void>;
 
-if (globalThis.document) {
+if (IN_GM) {
+  // greasemonkey
+  loadScript = greasemonkeyLoadScript;
+} else if (globalThis.document) {
   // browser
   loadScript = async (url) => await import(url);
 } else if (globalThis.importScripts) {
@@ -218,4 +260,25 @@ async function nodeLoadScript(url: string) {
     // system.
     await import(nodeUrlMod.pathToFileURL(url).href);
   }
+}
+
+/**
+ * Load a text file and executes it as Javascript
+ * @param url The path to load.
+ * @private
+ */
+async function greasemonkeyLoadScript(url: string) {
+  // If it's a url, load it with fetch then eval it.
+  console.log("greasemonkeyLoadScript");
+  console.log("url: " + url);
+  // @ts-ignore
+  GM.xmlHttpRequest({
+    method: "GET",
+    url: url,
+    responseType: "blob",
+    // @ts-ignore
+    onload: function(response) {
+      eval?.(response.responseText);
+    }
+  });
 }
