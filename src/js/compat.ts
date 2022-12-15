@@ -282,3 +282,31 @@ async function greasemonkeyLoadScript(url: string) {
     }
   });
 }
+
+/**
+ * Load a file, only for use in Greasemonkey. Resolves relative paths against
+ * indexURL.
+ *
+ * @param path the path to load
+ * @returns a string containing the data
+ * @private
+ */
+export async function greasemonkey_loadFile(
+  path: string,
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    // @ts-ignore
+    GM.xmlHttpRequest({
+      method: "GET",
+      url: path,
+      // @ts-ignore
+      onload: function(response) {
+        resolve(response.responseText);
+      },
+      // @ts-ignore
+      onerror: function(response) {
+        reject(response.statusText);
+      }
+    });
+  });
+}

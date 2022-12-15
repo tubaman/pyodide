@@ -4,10 +4,12 @@ declare var API: any;
 
 import {
   IN_NODE,
+  IN_GM,
   nodeFsPromisesMod,
   loadBinaryFile,
   initNodeModules,
   resolvePath,
+  greasemonkey_loadFile,
 } from "./compat.js";
 import { PyProxy, isPyProxy } from "./pyproxy.gen";
 
@@ -24,6 +26,9 @@ async function initializePackageIndex(lockFileURL: string) {
     await initNodeModules();
     const package_string = await nodeFsPromisesMod.readFile(lockFileURL);
     repodata = JSON.parse(package_string);
+  } else if (IN_GM) {
+    let responseText = await greasemonkey_loadFile(lockFileURL);
+    repodata = JSON.parse(responseText);
   } else {
     let response = await fetch(lockFileURL);
     repodata = await response.json();
