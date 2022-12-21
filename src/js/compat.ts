@@ -364,12 +364,12 @@ export async function instantiateWasm(
 ): Promise<any> {
   let response = await greasemonkey_get('http://localhost:8001/pyodide.asm.wasm', 'arraybuffer')
   console.log("instantiateWasm response.responseText: " + JSON.stringify(response.responseText));
-  let wasmData = new TextEncoder('iso8859-1').encode(response.responseText);
-  console.log("instantiateWasm wasmData: " + JSON.stringify(wasmData));
+  let wasmData = response.response;
 
   // @ts-ignore
-  let result = WebAssembly.instantiate(wasmData, imports);
-  successCallback(result);
+  let result = await WebAssembly.instantiate(wasmData, imports);
+  console.log("result: " + JSON.stringify(result) + "(" + result + ")");
+  successCallback(result['instance'], result['module']);
   return new Promise((resolve, reject) => {
     resolve({});
   });
