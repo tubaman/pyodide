@@ -9,6 +9,7 @@ import {
   pathSep,
   resolvePath,
   getPreloadedPackage,
+  instantiateWasm,
 } from "./compat";
 
 import { createModule, setStandardStreams, setHomeDirectory } from "./module";
@@ -319,6 +320,8 @@ export async function loadPyodide(
   Module.locateFile = (path: string) => config.indexURL + path;
   console.log('Module.getPreloadedPackage defined');
   Module.getPreloadedPackage = getPreloadedPackage;
+  console.log('Module.instantiateWasm defined');
+  Module.instantiateWasm = instantiateWasm;
 
   const scriptSrc = `${config.indexURL}pyodide.asm.js`;
   await loadScript(scriptSrc);

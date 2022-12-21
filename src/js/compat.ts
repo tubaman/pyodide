@@ -163,6 +163,41 @@ async function browser_loadBinaryFile(
 }
 
 /**
+ * Perform an HTTP GET, only for use in Greasemonkey.
+ *
+ * @param path the path to load
+ * @returns A response
+ * @private
+ */
+async function greasemonkey_get(
+  path: string,
+  responseType: string,
+): Promise<any> {
+  console.log("greasemonkey_get");
+  console.log("path: " + path);
+  return new Promise((resolve, reject) => {
+    // @ts-ignore
+    GM.xmlHttpRequest({
+      method: "GET",
+      url: path,
+      responseType: responseType,
+      // @ts-ignore
+      onload: function(response) {
+        console.log("greasemonkey_get GM.xmlHttpRequest onload response: " + JSON.stringify(response));
+        console.log("greasemonkey_get GM.xmlHttpRequest onload response.responseText: " + JSON.stringify(response.responseText));
+        console.log("greasemonkey_get GM.xmlHttpRequest onload response.response: " + JSON.stringify(response.response));
+        resolve(response);
+      },
+      // @ts-ignore
+      onerror: function(response) {
+        console.log("greasemonkey_get GM.xmlHttpRequest onerror response: " + JSON.stringify(response));
+        reject(response);
+      }
+    });
+  });
+}
+
+/**
  * Load a binary file, only for use in Greasemonkey. Resolves relative paths against
  * indexURL.
  *
@@ -321,4 +356,21 @@ export function getPreloadedPackage(
 ): ArrayBuffer {
   console.log("getPreloadedPackage remotePackageName: " + remotePackageName);
   return globalThis.asmData;
+}
+
+export async function instantiateWasm(
+  imports: object,
+  successCallback: any,
+): Promise<any> {
+  let response = await greasemonkey_get('http://localhost:8001/pyodide.asm.wasm', 'arraybuffer')
+  console.log("instantiateWasm response.responseText: " + JSON.stringify(response.responseText));
+  let wasmData = new TextEncoder('iso8859-1').encode(response.responseText);
+  console.log("instantiateWasm wasmData: " + JSON.stringify(wasmData));
+
+  // @ts-ignore
+  let result = WebAssembly.instantiate(wasmData, imports);
+  successCallback(result);
+  return new Promise((resolve, reject) => {
+    resolve({});
+  });
 }
