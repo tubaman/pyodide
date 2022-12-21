@@ -23,6 +23,7 @@ declare var globalThis: {
   importScripts: (url: string) => void;
   document?: any;
   fetch?: any;
+  asmData?: any;
 };
 
 /**
@@ -271,6 +272,9 @@ async function greasemonkeyLoadScript(url: string) {
   // If it's a url, load it with fetch then eval it.
   console.log("greasemonkeyLoadScript");
   console.log("url: " + url);
+  // TODO: check to see if we're loading pyodide.asm.js here
+  // cache asm.data so we can use emscripten's Module.getPreloadedPackage
+  globalThis.asmData = await greasemonkey_loadBinaryFile("http://localhost:8001/pyodide.asm.data", undefined);
   // @ts-ignore
   GM.xmlHttpRequest({
     method: "GET",
@@ -309,4 +313,12 @@ export async function greasemonkey_loadFile(
       }
     });
   });
+}
+
+export function getPreloadedPackage(
+  remotePackageName: string,
+  remotePackageSize: number,
+): ArrayBuffer {
+  console.log("getPreloadedPackage remotePackageName: " + remotePackageName);
+  return globalThis.asmData;
 }
