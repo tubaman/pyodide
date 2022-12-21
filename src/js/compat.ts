@@ -212,22 +212,9 @@ async function greasemonkey_loadBinaryFile(
 ): Promise<Uint8Array> {
   console.log("greasemonkey_loadBinaryFile");
   console.log("path: " + path);
-  return new Promise((resolve, reject) => {
-    // @ts-ignore
-    GM.xmlHttpRequest({
-      method: "GET",
-      url: path,
-      responseType: "arraybuffer",
-      // @ts-ignore
-      onload: function(response) {
-        resolve(new Uint8Array(response.responseText));
-      },
-      // @ts-ignore
-      onerror: function(response) {
-        reject(response.statusText);
-      }
-    });
-  });
+  let response = await greasemonkey_get(path, "arraybuffer");
+  console.log("greasemonkey_loadBinaryFile byteLength: " + response.response.byteLength);
+  return new Uint8Array(response.response);
 }
 
 /** @private */
@@ -355,7 +342,7 @@ export function getPreloadedPackage(
   remotePackageSize: number,
 ): ArrayBuffer {
   console.log("getPreloadedPackage remotePackageName: " + remotePackageName);
-  return globalThis.asmData;
+  return globalThis.asmData.buffer;
 }
 
 export async function instantiateWasm(
