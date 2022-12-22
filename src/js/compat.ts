@@ -298,15 +298,8 @@ async function greasemonkeyLoadScript(url: string) {
     globalThis.asmData = await greasemonkey_loadBinaryFile(dataUrl.href, undefined);
   }
   // @ts-ignore
-  GM.xmlHttpRequest({
-    method: "GET",
-    url: url,
-    responseType: "blob",
-    // @ts-ignore
-    onload: function(response) {
-      eval?.(response.responseText);
-    }
-  });
+  let response = await greasemonkey_get(url, "blob");
+  eval(response.responseText);
 }
 
 /**
