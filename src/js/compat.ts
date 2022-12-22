@@ -283,9 +283,20 @@ async function nodeLoadScript(url: string) {
  */
 async function greasemonkeyLoadScript(url: string) {
   // If it's a url, load it with fetch then eval it.
-  // TODO: check to see if we're loading pyodide.asm.js here
-  // cache asm.data so we can use emscripten's Module.getPreloadedPackage
-  globalThis.asmData = await greasemonkey_loadBinaryFile("http://localhost:8001/pyodide.asm.data", undefined);
+  //
+  // Check to see if we're loading pyodide.asm.js here
+  // cache asm.data so we can use emscripten's Module.getPreloadedPackage.
+  let urlParts = new URL(url);
+  let pathParts = urlParts.pathname.split("/");
+  let filename = pathParts[pathParts.length-1];
+  if (filename == "pyodide.asm.js") {
+    let dataUrl = new URL(url);
+    let dataPathParts = dataUrl.pathname.split("/");
+    dataPathParts[dataPathParts.length-1] = "pyodide.asm.data";
+    let dataPath = dataPathParts.join("/");
+    dataUrl.pathname = dataPath;
+    globalThis.asmData = await greasemonkey_loadBinaryFile(dataUrl.href, undefined);
+  }
   // @ts-ignore
   GM.xmlHttpRequest({
     method: "GET",
@@ -337,7 +348,8 @@ export async function instantiateWasm(
   imports: object,
   successCallback: any,
 ): Promise<any> {
-  let response = await greasemonkey_get('http://localhost:8001/pyodide.asm.wasm', 'arraybuffer')
+  // @ts-ignore
+  let response = await greasemonkey_get(this.locateFile('pyodide.asm.wasm'), 'arraybuffer')
   let wasmData = response.response;
 
   // @ts-ignore
