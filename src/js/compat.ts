@@ -337,14 +337,23 @@ export async function greasemonkey_loadFile(
   });
 }
 
-export function getPreloadedPackage(
+export function greasemonkey_getPreloadedPackage(
   remotePackageName: string,
   remotePackageSize: number,
 ): ArrayBuffer {
   return globalThis.asmData.buffer;
 }
 
-export async function instantiateWasm(
+/** @private */
+export let getPreloadedPackage: (
+  remotePackageName: string,
+  remotePackageSize: number,
+) => ArrayBuffer;
+if (IN_GM) {
+  getPreloadedPackage = greasemonkey_getPreloadedPackage;
+}
+
+export async function greasemonkey_instantiateWasm(
   imports: object,
   successCallback: any,
 ): Promise<any> {
@@ -358,4 +367,13 @@ export async function instantiateWasm(
   return new Promise((resolve, reject) => {
     resolve({});
   });
+}
+
+/** @private */
+export let instantiateWasm: (
+  imports: object,
+  successCallback: any,
+) => Promise<any>;
+if (IN_GM) {
+  instantiateWasm = greasemonkey_instantiateWasm;
 }
