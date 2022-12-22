@@ -432,7 +432,6 @@ export async function loadPackage(
   messageCallback?: (msg: string) => void,
   errorCallback?: (msg: string) => void,
 ) {
-  console.log("loadPackage");
   messageCallback = messageCallback || console.log;
   errorCallback = errorCallback || console.error;
   if (isPyProxy(names)) {

@@ -173,8 +173,6 @@ async function greasemonkey_get(
   path: string,
   responseType: string,
 ): Promise<any> {
-  console.log("greasemonkey_get");
-  console.log("path: " + path);
   return new Promise((resolve, reject) => {
     // @ts-ignore
     GM.xmlHttpRequest({
@@ -183,14 +181,10 @@ async function greasemonkey_get(
       responseType: responseType,
       // @ts-ignore
       onload: function(response) {
-        console.log("greasemonkey_get GM.xmlHttpRequest onload response: " + JSON.stringify(response));
-        console.log("greasemonkey_get GM.xmlHttpRequest onload response.responseText: " + JSON.stringify(response.responseText));
-        console.log("greasemonkey_get GM.xmlHttpRequest onload response.response: " + JSON.stringify(response.response));
         resolve(response);
       },
       // @ts-ignore
       onerror: function(response) {
-        console.log("greasemonkey_get GM.xmlHttpRequest onerror response: " + JSON.stringify(response));
         reject(response);
       }
     });
@@ -210,10 +204,7 @@ async function greasemonkey_loadBinaryFile(
   path: string,
   subResourceHash: string | undefined,
 ): Promise<Uint8Array> {
-  console.log("greasemonkey_loadBinaryFile");
-  console.log("path: " + path);
   let response = await greasemonkey_get(path, "arraybuffer");
-  console.log("greasemonkey_loadBinaryFile byteLength: " + response.response.byteLength);
   return new Uint8Array(response.response);
 }
 
@@ -292,8 +283,6 @@ async function nodeLoadScript(url: string) {
  */
 async function greasemonkeyLoadScript(url: string) {
   // If it's a url, load it with fetch then eval it.
-  console.log("greasemonkeyLoadScript");
-  console.log("url: " + url);
   // TODO: check to see if we're loading pyodide.asm.js here
   // cache asm.data so we can use emscripten's Module.getPreloadedPackage
   globalThis.asmData = await greasemonkey_loadBinaryFile("http://localhost:8001/pyodide.asm.data", undefined);
@@ -341,7 +330,6 @@ export function getPreloadedPackage(
   remotePackageName: string,
   remotePackageSize: number,
 ): ArrayBuffer {
-  console.log("getPreloadedPackage remotePackageName: " + remotePackageName);
   return globalThis.asmData.buffer;
 }
 
@@ -350,12 +338,10 @@ export async function instantiateWasm(
   successCallback: any,
 ): Promise<any> {
   let response = await greasemonkey_get('http://localhost:8001/pyodide.asm.wasm', 'arraybuffer')
-  console.log("instantiateWasm response.responseText: " + JSON.stringify(response.responseText));
   let wasmData = response.response;
 
   // @ts-ignore
   let result = await WebAssembly.instantiate(wasmData, imports);
-  console.log("result: " + JSON.stringify(result) + "(" + result + ")");
   successCallback(result['instance'], result['module']);
   return new Promise((resolve, reject) => {
     resolve({});

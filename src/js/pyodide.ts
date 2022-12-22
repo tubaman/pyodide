@@ -318,9 +318,7 @@ export async function loadPyodide(
   // locateFile tells Emscripten where to find the data files that initialize
   // the file system.
   Module.locateFile = (path: string) => config.indexURL + path;
-  console.log('Module.getPreloadedPackage defined');
   Module.getPreloadedPackage = getPreloadedPackage;
-  console.log('Module.instantiateWasm defined');
   Module.instantiateWasm = instantiateWasm;
 
   const scriptSrc = `${config.indexURL}pyodide.asm.js`;
