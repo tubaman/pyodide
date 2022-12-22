@@ -314,21 +314,8 @@ async function greasemonkeyLoadScript(url: string) {
 export async function greasemonkey_loadFile(
   path: string,
 ): Promise<string> {
-  return new Promise((resolve, reject) => {
-    // @ts-ignore
-    GM.xmlHttpRequest({
-      method: "GET",
-      url: path,
-      // @ts-ignore
-      onload: function(response) {
-        resolve(response.responseText);
-      },
-      // @ts-ignore
-      onerror: function(response) {
-        reject(response.statusText);
-      }
-    });
-  });
+  let response = await greasemonkey_get(path, "text");
+  return response.responseText;
 }
 
 export function greasemonkey_getPreloadedPackage(
