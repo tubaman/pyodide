@@ -16,8 +16,9 @@ let nodeVmMod: any;
 export let nodeFsPromisesMod: any;
 
 // Detect if we're in Greasemonkey
-// @ts-ignore
-export const IN_GM = typeof GM.xmlHttpRequest === "function";
+declare var GM: any;
+export const IN_GM = typeof GM !== "undefined" &&
+  typeof GM.xmlHttpRequest === "function";
 
 declare var globalThis: {
   importScripts: (url: string) => void;
