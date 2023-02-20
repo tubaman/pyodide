@@ -8,6 +8,8 @@ import {
   initNodeModules,
   pathSep,
   resolvePath,
+  getPreloadedPackage,
+  instantiateWasm,
 } from "./compat";
 
 import { createModule, setStandardStreams, setHomeDirectory } from "./module";
@@ -316,6 +318,9 @@ export async function loadPyodide(
   // locateFile tells Emscripten where to find the data files that initialize
   // the file system.
   Module.locateFile = (path: string) => config.indexURL + path;
+  Module.getPreloadedPackage = getPreloadedPackage;
+  Module.instantiateWasm = instantiateWasm;
+
   const scriptSrc = `${config.indexURL}pyodide.asm.js`;
   await loadScript(scriptSrc);
 
