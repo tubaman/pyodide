@@ -199,13 +199,18 @@ async function greasemonkey_get(
  * @returns A Uint8Array containing the binary data
  * @private
  */
-async function greasemonkey_getBinaryResponse(
+function greasemonkey_getBinaryResponse(
   path: string,
   subResourceHash: string | undefined,
-): Promise<Uint8Array> {
-  let response = await greasemonkey_get(path, "arraybuffer");
-  return new Uint8Array(response.response);
-}
+): {binary: Promise<Uint8Array>} {
+  return {
+      binary: new Promise((resolve, reject) => {
+        greasemonkey_get(path, "arraybuffer").then((response) => {
+          resolve(new Uint8Array(response.response));
+        });
+      })
+    }
+};
 
 /** @private */
 export let getBinaryResponse: (
@@ -331,7 +336,7 @@ async function greasemonkeyLoadScript(url: string) {
     dataPathParts[dataPathParts.length-1] = "pyodide.asm.data";
     let dataPath = dataPathParts.join("/");
     dataUrl.pathname = dataPath;
-    globalThis.asmData = await greasemonkey_getBinaryResponse(dataUrl.href, undefined);
+    globalThis.asmData = await greasemonkey_getBinaryResponse(dataUrl.href, undefined).binary;
   }
   // @ts-ignore
   let response = await greasemonkey_get(url, "blob");

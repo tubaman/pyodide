@@ -30,7 +30,7 @@ async function initializePackageIndex(lockFileURL: string) {
     lockfile = JSON.parse(package_string);
   } else if (IN_GM) {
     let response = await greasemonkey_loadFile(lockFileURL);
-    lockfile = await response.json();
+    lockfile = JSON.parse(await response);
   } else {
     let response = await fetch(lockFileURL);
     lockfile = await response.json();
